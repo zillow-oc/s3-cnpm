@@ -21,7 +21,7 @@
   },
   "homepage": "https://github.com/QubitProducts/s3-cnpm",
   "dependencies": {
-    "knox": "^0.9.1",
+    "knox": "git://github.com/thecaddy/knox.git",
     "save-to": "^1.0.3",
     "thunkify": "^2.1.2",
     "when": "^3.5.0"
