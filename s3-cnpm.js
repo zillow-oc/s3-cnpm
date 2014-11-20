@@ -23,6 +23,7 @@ function S3(config) {
   this.client = knox.createClient(this.config);
   this.client.getFile = thunkify(this.client.getFile);
   this.client.deleteFile = thunkify(this.client.deleteFile);
+  this.client.list = thunkify(this.client.list);
 }
 
 /**
@@ -117,6 +118,18 @@ S3.prototype.remove = function* (key) {
 };
 
 /**
+*
+* @param {String} prefix
+* @api public
+*/
+
+S3.prototype.list = function* (prefix){
+  var client = this.client;
+  if(!prefix) prefix = '';
+  yield client.list({prefix: ''});
+}
+
+/**
  * escape '/' and '\'
  * prepend the config.folder
  */
@@ -126,3 +139,4 @@ S3.prototype.getPath = function (key) {
   key = path.join(this.config.folder, key);
   return key;
 };
+
