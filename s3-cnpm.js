@@ -141,7 +141,7 @@ S3.prototype.listAll = function*(params){
   while(truncated){
     var resp = yield this.listFunc.call(this.client, params);
     for(var i = 0; i < resp.Contents.length; i ++){
-      objList[resp.Contents[i].Key] = true;
+      objList[resp.Contents[i].Key] = resp.Contents[i].Key;
       j++;
 
       if(i === resp.Contents.length - 1) params.marker = resp.Contents[i].Key;
