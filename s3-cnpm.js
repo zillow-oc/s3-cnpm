@@ -122,6 +122,7 @@ S3.prototype.remove = function* (key) {
 */
 
 S3.prototype.list = function*(params){
+  if(!params) params = {};
   return yield this.listFunc.call(this.client, params);
 }
 
@@ -132,6 +133,7 @@ S3.prototype.list = function*(params){
 */
 
 S3.prototype.listAll = function*(params){
+  if(!params) params = {};
   var objList = {};
   var truncated = true;
   params.marker = '';
