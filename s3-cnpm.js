@@ -21,9 +21,9 @@ module.exports = function (config) {
 function S3(config) {
   this.config = config;
   this.client = knox.createClient(this.config);
-  this.client.getFile = thunkify(this.client.getFile);
-  this.client.deleteFile = thunkify(this.client.deleteFile);
-  this.client.list = thunkify(this.client.list);
+  this.getFile = thunkify(this.client.getFile);
+  this.deleteFile = thunkify(this.client.deleteFile);
+  this.listFunc = thunkify(this.client.list);
 }
 
 /**
@@ -98,9 +98,8 @@ S3.prototype.uploadBuffer = function* (content, options) {
  */
 
 S3.prototype.download = function* (key, savePath) {
-  var client = this.client;
   var filepath = this.getPath(key);
-  var res = yield client.getFile(filepath);
+  var res = yield this.getFile.call(this.client, filepath);
   yield saveTo(res, savePath);
 };
 
@@ -112,21 +111,43 @@ S3.prototype.download = function* (key, savePath) {
  */
 
 S3.prototype.remove = function* (key) {
-  var client = this.client;
   var filepath = this.getPath(key);
-  yield client.deleteFile(filepath);
+  yield this.deleteFile.call(this.client, filepath);
 };
 
 /**
 *
-* @param {String} prefix
+* @param {options} prefix
 * @api public
 */
 
-S3.prototype.list = function* (prefix){
-  var client = this.client;
-  if(!prefix) prefix = '';
-  yield client.list({prefix: ''});
+S3.prototype.list = function*(params){
+  return yield this.listFunc.call(this.client, params);
+}
+
+/**
+*
+* @param {options} prefix
+* @api public
+*/
+
+S3.prototype.listAll = function*(params){
+  var objList = {};
+  var truncated = true;
+  params.marker = '';
+  var j = 0;
+  while(truncated){
+    var resp = yield this.listFunc.call(this.client, params);
+    for(var i = 0; i < resp.Contents.length; i ++){
+      objList[resp.Contents[i].Key] = true;
+      j++;
+
+      if(i === resp.Contents.length - 1) params.marker = resp.Contents[i].Key;
+    }
+    truncated = (resp.IsTruncated == true);
+
+  }
+  return objList;
 }
 
 /**
